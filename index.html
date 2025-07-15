@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habit Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta8PUbWsyFX4Nk/LAgeroXyL/glQeu7t/hQfM+oJ+6sPzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
     <style>
+        /* Base styles for all screen sizes */
         * {
             margin: 0;
             padding: 0;
@@ -87,7 +89,7 @@
         .add-habit-form {
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 30px; /* Adjust margin if needed after reordering */
         }
         
         .add-habit-form input {
@@ -154,6 +156,8 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            /* Flex-grow to take available space */
+            flex-grow: 1; 
         }
         
         .habit-checkbox {
@@ -167,6 +171,7 @@
             justify-content: center;
             transition: all 0.3s;
             background-color: #f0f0f0; /* Light gray background for checkbox */
+            flex-shrink: 0; /* Prevent checkbox from shrinking */
         }
         
         .habit-checkbox.checked {
@@ -185,6 +190,8 @@
             font-size: 18px;
             font-weight: 600;
             color: #4a4a4a;
+            /* Allow text to wrap if it's too long */
+            word-break: break-word; 
         }
 
         .habit-item.completed .habit-name {
@@ -195,15 +202,13 @@
             font-size: 14px;
             color: #8a8a8a; /* Medium gray for streak */
             margin-left: 10px;
-        }
-        
-        .habit-item.completed .habit-streak {
-            color: #6ab06e; /* Lighter green for completed streak */
+            flex-shrink: 0; /* Prevent streak from shrinking */
         }
         
         .habit-actions {
             display: flex;
             gap: 10px;
+            flex-shrink: 0; /* Prevent actions from shrinking */
         }
         
         .btn-small {
@@ -317,26 +322,174 @@
             margin-bottom: 10px;
         }
         
+        /* --- Responsive Adjustments for Mobile --- */
         @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
             .container {
-                padding: 20px;
+                padding: 15px;
+                border-radius: 10px;
             }
             
+            .header {
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            .current-date {
+                padding: 12px;
+                font-size: 1em;
+                margin-bottom: 20px;
+            }
+
+            .daily-summary {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .daily-summary h3 {
+                font-size: 1em;
+            }
+
+            .daily-percentage {
+                font-size: 2em;
+            }
+
+            .daily-message {
+                font-size: 0.9em;
+            }
+
             .add-habit-form {
                 flex-direction: column;
+                gap: 8px;
+                margin-top: 20px; /* Add margin-top instead of margin-bottom */
+                margin-bottom: 0; /* Remove margin-bottom */
             }
             
+            .add-habit-form input,
+            .btn {
+                padding: 12px;
+                font-size: 15px;
+                border-radius: 6px;
+            }
+            
+            .habits-list {
+                margin-bottom: 20px; /* This will now be above the add-habit-form */
+            }
+
             .habit-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+                padding: 12px;
+                margin-bottom: 8px;
+                border-radius: 10px;
+                flex-direction: row; 
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .habit-left {
+                flex-grow: 1; 
+                gap: 8px; 
+                max-width: calc(100% - 75px); 
+            }
+
+            .habit-checkbox {
+                width: 20px;
+                height: 20px;
+                min-width: 20px; 
+            }
+
+            .habit-checkbox.checked::after {
+                font-size: 12px;
+            }
+            
+            .habit-name {
+                font-size: 14px; 
+                white-space: nowrap; 
+                overflow: hidden; 
+                text-overflow: ellipsis; 
+            }
+            
+            .habit-streak {
+                font-size: 11px;
+                margin-left: 5px; 
+                white-space: nowrap; 
+                flex-shrink: 0;
             }
             
             .habit-actions {
-                width: 100%;
-                justify-content: flex-end;
+                gap: 5px; 
+                flex-shrink: 0;
+                min-width: 25px; 
+            }
+            
+            .btn-small {
+                padding: 6px; 
+                font-size: 16px; 
+                line-height: 1; 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .btn-small i {
+                font-size: 1em; 
+            }
+
+            .monthly-recap {
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .monthly-recap h2 {
+                font-size: 1.4em;
+                margin-bottom: 15px;
+            }
+
+            .month-selector select {
+                padding: 8px 12px;
+                font-size: 14px;
+                border-radius: 6px;
+            }
+
+            .recap-stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+                border-radius: 8px;
+            }
+
+            .stat-value {
+                font-size: 1.8em;
+            }
+
+            .stat-label {
+                font-size: 0.9em;
+            }
+
+            .habit-monthly-detail {
+                padding: 10px;
+                margin-bottom: 8px;
+                font-size: 0.9em;
+            }
+
+            .progress-bar {
+                width: 60px; 
+                min-width: 60px; 
             }
         }
+        /* End Responsive Adjustments */
     </style>
 </head>
 <body>
@@ -355,15 +508,6 @@
                 <h3>Penyelesaian Hari Ini</h3>
                 <div class="daily-percentage">{{ dailyCompletionPercentage }}%</div>
                 <p class="daily-message">{{ dailyCompletionMessage }}</p>
-            </div>
-            <div class="add-habit-form">
-                <input 
-                    type="text" 
-                    v-model="newHabit" 
-                    placeholder="Tambah kebiasaan baru..." 
-                    @keyup.enter="addHabit"
-                >
-                <button class="btn" @click="addHabit">Tambah</button>
             </div>
             
             <div class="habits-list" v-if="habits.length > 0">
@@ -391,7 +535,7 @@
                             class="btn btn-small btn-danger" 
                             @click="deleteHabit(habit.id)"
                         >
-                            Hapus
+                            <i class="fas fa-trash-alt"></i> 
                         </button>
                     </div>
                 </div>
@@ -400,6 +544,16 @@
             <div v-else class="empty-state">
                 <h3>Belum ada kebiasaan</h3>
                 <p>Mulai dengan menambahkan kebiasaan pertama Anda!</p>
+            </div>
+
+            <div class="add-habit-form">
+                <input 
+                    type="text" 
+                    v-model="newHabit" 
+                    placeholder="Tambah kebiasaan baru..." 
+                    @keyup.enter="addHabit"
+                >
+                <button class="btn" @click="addHabit">Tambah</button>
             </div>
             
             <div class="monthly-recap">
