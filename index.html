@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5; /* Light gray background */
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff; /* White background for the main container */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Softer shadow */
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4a4a4a; /* Darker gray for heading */
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6a6a6a; /* Medium gray for sub-text */
+            font-size: 1.1em;
+        }
+        
+        .current-date {
+            background: #e0e4eb; /* Light grayish blue */
+            color: #4a4a4a; /* Dark gray text */
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .daily-summary {
+            background: #f7f7f7; /* Very light gray */
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03); /* Subtle shadow */
+        }
+
+        .daily-summary h3 {
+            color: #4a4a4a;
+            margin-bottom: 10px;
+        }
+
+        .daily-percentage {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #7a7a7a; /* A stylish gray */
+            margin-bottom: 10px;
+        }
+
+        .daily-message {
+            font-size: 1.1em;
+            color: #6a6a6a;
+            line-height: 1.4;
+        }
+        
+        .add-habit-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .add-habit-form input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #dcdcdc; /* Lighter border */
+            border-radius: 8px; /* Slightly smaller radius */
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .add-habit-form input:focus {
+            border-color: #a0a0a0; /* Darker gray on focus */
+            box-shadow: 0 0 0 3px rgba(160,160,160,0.2); /* Soft focus glow */
+        }
+        
+        .btn {
+            padding: 15px 20px;
+            background: #8a8a8a; /* Medium gray button */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s, transform 0.2s;
+        }
+        
+        .btn:hover {
+            background: #6a6a6a; /* Darker gray on hover */
+            transform: translateY(-2px);
+        }
+        
+        .habits-list {
+            margin-bottom: 30px;
+        }
+        
+        .habit-item {
+            background: #ffffff;
+            border: 1px solid #e0e0e0; /* Lighter border */
+            border-radius: 12px; /* Slightly smaller radius */
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04); /* Subtle shadow */
+        }
+        
+        .habit-item:hover {
+            border-color: #b0b0b0; /* Hover border */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08); /* More pronounced shadow on hover */
+        }
+        
+        .habit-item.completed {
+            background: #d4edda; /* Light green-gray for completed */
+            color: #388e3c; /* Darker green text */
+            border-color: #c3e6cb;
+        }
+        
+        .habit-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .habit-checkbox {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #b0b0b0; /* Gray border for checkbox */
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            background-color: #f0f0f0; /* Light gray background for checkbox */
+        }
+        
+        .habit-checkbox.checked {
+            background: #5cb85c; /* Green for checked */
+            border-color: #4cae4c;
+        }
+        
+        .habit-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .habit-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+
+        .habit-item.completed .habit-name {
+            color: #388e3c; /* Darker green for completed name */
+        }
+        
+        .habit-streak {
+            font-size: 14px;
+            color: #8a8a8a; /* Medium gray for streak */
+            margin-left: 10px;
+        }
+        
+        .habit-item.completed .habit-streak {
+            color: #6ab06e; /* Lighter green for completed streak */
+        }
+        
+        .habit-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+        
+        .btn-danger {
+            background: #dc3545; /* Red for danger */
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .monthly-recap {
+            background: #f7f7f7; /* Very light gray */
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); /* Softer shadow */
+        }
+        
+        .monthly-recap h2 {
+            color: #4a4a4a;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .month-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .month-selector select {
+            padding: 10px 15px;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            color: #4a4a4a;
+            background-color: #ffffff;
+            appearance: none; /* Remove default arrow */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236a6a6a%22%20d%3D%22M287%2069.9a17.8%2017.8%200%200%200-25.3%200L146.2%20185.3%2030.7%2069.9a17.8%2017.8%200%200%200-25.3%2025.3l128%20128c6.9%206.9%2017.8%206.9%2024.7%200l128-128c6.9-6.9%206.9-17.8%200-25.3z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+        }
+        
+        .recap-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #7a7a7a; /* A stylish gray for stats */
+        }
+        
+        .stat-label {
+            color: #6a6a6a;
+            margin-top: 5px;
+        }
+        
+        .habit-monthly-detail {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.03);
+        }
+        
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #a0a0a0; /* Gray for progress fill */
+            transition: width 0.3s;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #6a6a6a;
+            padding: 40px;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .add-habit-form {
+                flex-direction: column;
+            }
+            
+            .habit-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .habit-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>Daily Habit</h1>
+                <p>Bismillah, kesuksesan dimulai dari pilihan kebiasaan</p>
+            </div>
+            
+            <div class="current-date">
+                📅 {{ currentDateFormatted }}
+            </div>
+
+            <div class="daily-summary">
+                <h3>Penyelesaian Hari Ini</h3>
+                <div class="daily-percentage">{{ dailyCompletionPercentage }}%</div>
+                <p class="daily-message">{{ dailyCompletionMessage }}</p>
+            </div>
+            <div class="add-habit-form">
+                <input 
+                    type="text" 
+                    v-model="newHabit" 
+                    placeholder="Tambah kebiasaan baru..." 
+                    @keyup.enter="addHabit"
+                >
+                <button class="btn" @click="addHabit">Tambah</button>
+            </div>
+            
+            <div class="habits-list" v-if="habits.length > 0">
+                <div 
+                    v-for="habit in habits" 
+                    :key="habit.id"
+                    class="habit-item"
+                    :class="{ completed: isCompletedToday(habit.id) }"
+                >
+                    <div class="habit-left">
+                        <div 
+                            class="habit-checkbox"
+                            :class="{ checked: isCompletedToday(habit.id) }"
+                            @click="toggleHabit(habit.id)"
+                        ></div>
+                        <div>
+                            <div class="habit-name">{{ habit.name }}</div>
+                            <div class="habit-streak">
+                                🔥 Streak: {{ getStreak(habit.id) }} hari
+                            </div>
+                        </div>
+                    </div>
+                    <div class="habit-actions">
+                        <button 
+                            class="btn btn-small btn-danger" 
+                            @click="deleteHabit(habit.id)"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div v-else class="empty-state">
+                <h3>Belum ada kebiasaan</h3>
+                <p>Mulai dengan menambahkan kebiasaan pertama Anda!</p>
+            </div>
+            
+            <div class="monthly-recap">
+                <h2>📊 Rekap Bulanan</h2>
+                
+                <div class="month-selector">
+                    <select v-model="selectedMonthYear">
+                        <option v-for="monthYear in availableMonths" :key="monthYear.value" :value="monthYear.value">
+                            {{ monthYear.label }}
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="recap-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ monthlyStats.totalHabits }}</div>
+                        <div class="stat-label">Total Kebiasaan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ monthlyStats.averageCompletion }}%</div>
+                        <div class="stat-label">Rata-rata Penyelesaian</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ monthlyStats.totalCompletions }}</div>
+                        <div class="stat-label">Total Penyelesaian</div>
+                    </div>
+                </div>
+                
+                <div v-if="monthlyHabits.length > 0">
+                    <div v-for="habit in monthlyHabits" :key="habit.id" class="habit-monthly-detail">
+                        <div>
+                            <strong>{{ habit.name }}</strong>
+                            <div style="font-size: 14px; color: #6a6a6a;">
+                                {{ habit.completions }}/{{ daysInSelectedMonth }} hari ({{ habit.percentage }}%)
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" :style="{ width: habit.percentage + '%' }"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div v-else class="empty-state">
+                    <h3>Tidak ada data untuk bulan ini</h3>
+                    <p>Mulai catat kebiasaan Anda untuk melihat statistik bulanan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                const today = new Date();
+                const currentMonth = today.getMonth(); // 0-indexed
+                const currentYear = today.getFullYear();
+
+                return {
+                    habits: [],
+                    completions: {}, // { habitId: { 'YYYY-MM-DD': true } }
+                    newHabit: '',
+                    selectedMonthYear: `${currentYear}-${String(currentMonth).padStart(2, '0')}`, // Format 'YYYY-MM'
+                    
+                    allMonths: [
+                        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                    ],
+                    targetCompletionPercentage: 85 // Target persentase harian
+                }
+            },
+            
+            computed: {
+                currentDateFormatted() {
+                    const today = new Date();
+                    const options = { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    };
+                    return today.toLocaleDateString('id-ID', options);
+                },
+
+                dailyCompletionPercentage() {
+                    if (this.habits.length === 0) return 0;
+
+                    const today = new Date().toISOString().split('T')[0];
+                    let completedTodayCount = 0;
+                    this.habits.forEach(habit => {
+                        if (this.completions[habit.id] && this.completions[habit.id][today]) {
+                            completedTodayCount++;
+                        }
+                    });
+                    return Math.round((completedTodayCount / this.habits.length) * 100);
+                },
+
+                dailyCompletionMessage() {
+                    if (this.habits.length === 0) {
+                        return "Tambahkan kebiasaan Anda untuk mulai melacak progress harian!";
+                    } else if (this.dailyCompletionPercentage >= this.targetCompletionPercentage) {
+                        return "Alhamdulillah! Anda sudah mencapai target hari ini. Semoga istiqomah!";
+                    } else {
+                        return `Jangan bersantai sebelum mencapai ${this.targetCompletionPercentage}% ! Semoga Allah mudahkan`;
+                    }
+                },
+                
+                availableMonths() {
+                    const months = [];
+                    const today = new Date();
+                    const currentMonth = today.getMonth(); // 0-indexed
+                    const currentYear = today.getFullYear();
+
+                    // Start from July 2025
+                    const startMonth = 6; // July is 6 (0-indexed)
+                    const startYear = 2025;
+
+                    let year = startYear;
+                    let month = startMonth;
+
+                    while (true) {
+                        const date = new Date(year, month, 1);
+                        const label = `${this.allMonths[month]} ${year}`;
+                        const value = `${year}-${String(month).padStart(2, '0')}`;
+                        months.push({ label, value });
+
+                        if (year === currentYear && month === currentMonth) {
+                            break; // Stop at the current month
+                        }
+
+                        month++;
+                        if (month > 11) {
+                            month = 0;
+                            year++;
+                        }
+                    }
+                    // Sort in descending order (most recent first)
+                    return months.sort((a, b) => {
+                        const [yearA, monthA] = a.value.split('-').map(Number);
+                        const [yearB, monthB] = b.value.split('-').map(Number);
+                        if (yearA !== yearB) {
+                            return yearB - yearA;
+                        }
+                        return monthB - monthA;
+                    });
+                },
+
+                selectedYear() {
+                    return parseInt(this.selectedMonthYear.split('-')[0]);
+                },
+                
+                selectedMonth() {
+                    return parseInt(this.selectedMonthYear.split('-')[1]); // 0-indexed
+                },
+
+                daysInSelectedMonth() {
+                    return new Date(this.selectedYear, this.selectedMonth + 1, 0).getDate();
+                },
+                
+                monthlyStats() {
+                    const habitsCount = this.habits.length;
+                    let totalCompletions = 0;
+                    
+                    this.habits.forEach(habit => {
+                        for (let day = 1; day <= this.daysInSelectedMonth; day++) {
+                            const dateKey = `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            if (this.completions[habit.id] && this.completions[habit.id][dateKey]) {
+                                totalCompletions++;
+                            }
+                        }
+                    });
+                    
+                    const totalPossibleCompletions = habitsCount * this.daysInSelectedMonth;
+                    
+                    return {
+                        totalHabits: habitsCount,
+                        totalCompletions: totalCompletions,
+                        averageCompletion: totalPossibleCompletions > 0 ? Math.round((totalCompletions / totalPossibleCompletions) * 100) : 0
+                    };
+                },
+                
+                monthlyHabits() {
+                    return this.habits.map(habit => {
+                        let completions = 0;
+                        for (let day = 1; day <= this.daysInSelectedMonth; day++) {
+                            const dateKey = `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            if (this.completions[habit.id] && this.completions[habit.id][dateKey]) {
+                                completions++;
+                            }
+                        }
+                        
+                        return {
+                            ...habit,
+                            completions,
+                            percentage: Math.round((completions / this.daysInSelectedMonth) * 100)
+                        };
+                    });
+                }
+            },
+            
+            methods: {
+                addHabit() {
+                    if (this.newHabit.trim()) {
+                        const habit = {
+                            id: Date.now(),
+                            name: this.newHabit.trim(),
+                            createdAt: new Date().toISOString()
+                        };
+                        this.habits.push(habit);
+                        this.newHabit = '';
+                        
+                        // Initialize completions for this habit if it doesn't exist
+                        if (!this.completions[habit.id]) {
+                            this.completions[habit.id] = {};
+                        }
+                        
+                        this.saveData();
+                    }
+                },
+                
+                deleteHabit(id) {
+                    if (confirm('Apakah Anda yakin ingin menghapus kebiasaan ini?')) {
+                        this.habits = this.habits.filter(h => h.id !== id);
+                        delete this.completions[id]; 
+                        this.saveData();
+                    }
+                },
+                
+                toggleHabit(habitId) {
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    if (!this.completions[habitId]) {
+                        this.completions[habitId] = {}; 
+                    }
+
+                    if (this.completions[habitId][today]) {
+                        delete this.completions[habitId][today];
+                    } else {
+                        this.completions[habitId][today] = true;
+                    }
+
+                    this.completions = { ...this.completions }; 
+                    this.saveData();
+                },
+                
+                isCompletedToday(habitId) {
+                    const today = new Date().toISOString().split('T')[0];
+                    return this.completions[habitId] && this.completions[habitId][today];
+                },
+                
+                getStreak(habitId) {
+                    if (!this.completions[habitId]) return 0;
+                    
+                    let streak = 0;
+                    const today = new Date();
+                    
+                    const todayKey = today.toISOString().split('T')[0];
+                    if (this.completions[habitId][todayKey]) {
+                        streak = 1; 
+                    } else {
+                        return 0;
+                    }
+                    
+                    for (let i = 1; i < 365; i++) { 
+                        const date = new Date(today);
+                        date.setDate(date.getDate() - i);
+                        const dateKey = date.toISOString().split('T')[0];
+                        
+                        if (this.completions[habitId][dateKey]) {
+                            streak++;
+                        } else {
+                            break; 
+                        }
+                    }
+                    
+                    return streak;
+                },
+                
+                saveData() {
+                    try {
+                        localStorage.setItem('habitTrackerData', JSON.stringify({
+                            habits: this.habits,
+                            completions: this.completions
+                        }));
+                        console.log("Data berhasil disimpan ke localStorage.");
+                    } catch (e) {
+                        console.error("Error saving data to localStorage:", e);
+                    }
+                },
+                
+                loadData() {
+                    try {
+                        const data = JSON.parse(localStorage.getItem('habitTrackerData') || '{}');
+                        this.habits = data.habits || [];
+                        this.completions = data.completions || {};
+                        console.log("Data berhasil dimuat dari localStorage.");
+                    } catch (e) {
+                        console.error("Error loading data from localStorage:", e);
+                        this.habits = [];
+                        this.completions = {};
+                    }
+                }
+            },
+            
+            mounted() {
+                this.loadData();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
