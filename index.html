@@ -633,7 +633,9 @@
         
         createApp({
             data() {
-                const today = new Date();
+                // Get current date and time in Jakarta timezone
+                const nowJakarta = new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta"});
+                const today = new Date(nowJakarta);
                 const currentMonth = today.getMonth(); // 0-indexed
                 const currentYear = today.getFullYear();
 
@@ -654,11 +656,13 @@
             computed: {
                 currentDateFormatted() {
                     const today = new Date();
+                    // Use 'id-ID' locale and specify 'Asia/Jakarta' timezone
                     const options = { 
                         weekday: 'long', 
                         year: 'numeric', 
                         month: 'long', 
-                        day: 'numeric' 
+                        day: 'numeric',
+                        timeZone: 'Asia/Jakarta' // Specify Jakarta timezone
                     };
                     return today.toLocaleDateString('id-ID', options);
                 },
@@ -666,10 +670,16 @@
                 dailyCompletionPercentage() {
                     if (this.habits.length === 0) return 0;
 
-                    const today = new Date().toISOString().split('T')[0];
+                    // Get today's date string in Jakarta timezone
+                    const today = new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta", year: "numeric", month: "2-digit", day: "2-digit"}).split(',')[0].split('/').reverse().join('-');
+                    // Reformat to YYYY-MM-DD, because toLocaleString can return MM/DD/YYYY or DD/MM/YYYY
+                    const [month, day, year] = new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta", month: "2-digit", day: "2-digit", year: "numeric"}).split(',')[0].split('/');
+                    const todayJakartaFormatted = `${year}-${month}-${day}`;
+
+
                     let completedTodayCount = 0;
                     this.habits.forEach(habit => {
-                        if (this.completions[habit.id] && this.completions[habit.id][today]) {
+                        if (this.completions[habit.id] && this.completions[habit.id][todayJakartaFormatted]) {
                             completedTodayCount++;
                         }
                     });
@@ -688,11 +698,13 @@
                 
                 availableMonths() {
                     const months = [];
-                    const today = new Date();
+                    // Get current date in Jakarta timezone for comparison
+                    const nowJakarta = new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta"});
+                    const today = new Date(nowJakarta);
                     const currentMonth = today.getMonth(); // 0-indexed
                     const currentYear = today.getFullYear();
 
-                    // Start from July 2025
+                    // Start from July 2025 (or adjust as needed)
                     const startMonth = 6; // July is 6 (0-indexed)
                     const startYear = 2025;
 
@@ -700,7 +712,6 @@
                     let month = startMonth;
 
                     while (true) {
-                        const date = new Date(year, month, 1);
                         const label = `${this.allMonths[month]} ${year}`;
                         const value = `${year}-${String(month).padStart(2, '0')}`;
                         months.push({ label, value });
@@ -780,12 +791,28 @@
             },
             
             methods: {
+                // Helper function to get today's date in YYYY-MM-DD format for Jakarta timezone
+                getTodayJakartaDateString() {
+                    const now = new Date();
+                    const options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        timeZone: 'Asia/Jakarta'
+                    };
+                    const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(now);
+                    const year = parts.find(p => p.type === 'year').value;
+                    const month = parts.find(p => p.type === 'month').value;
+                    const day = parts.find(p => p.type === 'day').value;
+                    return `${year}-${month}-${day}`;
+                },
+
                 addHabit() {
                     if (this.newHabit.trim()) {
                         const habit = {
                             id: Date.now(),
                             name: this.newHabit.trim(),
-                            createdAt: new Date().toISOString()
+                            createdAt: this.getTodayJakartaDateString() // Store creation date in Jakarta timezone
                         };
                         this.habits.push(habit);
                         this.newHabit = '';
@@ -808,7 +835,7 @@
                 },
                 
                 toggleHabit(habitId) {
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = this.getTodayJakartaDateString();
                     
                     if (!this.completions[habitId]) {
                         this.completions[habitId] = {}; 
@@ -825,7 +852,7 @@
                 },
                 
                 isCompletedToday(habitId) {
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = this.getTodayJakartaDateString();
                     return this.completions[habitId] && this.completions[habitId][today];
                 },
                 
@@ -834,22 +861,24 @@
                     
                     let streak = 0;
                     const today = new Date();
-                    
-                    const todayKey = today.toISOString().split('T')[0];
-                    if (this.completions[habitId][todayKey]) {
-                        streak = 1; 
-                    } else {
-                        return 0;
-                    }
-                    
-                    for (let i = 1; i < 365; i++) { 
+                    const jakartaTimeZone = 'Asia/Jakarta';
+
+                    // Iterate backwards from today to calculate streak
+                    for (let i = 0; i < 365; i++) { 
                         const date = new Date(today);
-                        date.setDate(date.getDate() - i);
-                        const dateKey = date.toISOString().split('T')[0];
+                        date.setDate(today.getDate() - i);
                         
+                        // Format the date to YYYY-MM-DD in Jakarta timezone
+                        const options = { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: jakartaTimeZone };
+                        const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(date);
+                        const year = parts.find(p => p.type === 'year').value;
+                        const month = parts.find(p => p.type === 'month').value;
+                        const day = parts.find(p => p.type === 'day').value;
+                        const dateKey = `${year}-${month}-${day}`;
+
                         if (this.completions[habitId][dateKey]) {
                             streak++;
-                        } else {
+                        } else if (i > 0) { // If it's not today and not completed, streak is broken
                             break; 
                         }
                     }
