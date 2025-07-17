@@ -30,6 +30,154 @@
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Softer shadow */
         }
+
+        /* Motivation Slider Styles */
+        .motivation-slider {
+            background: linear-gradient(135deg, #5E936C 0%, #93DA97 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .motivation-slider::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>') repeat;
+            pointer-events: none;
+        }
+
+        .motivation-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .motivation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .motivation-title {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .motivation-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .motivation-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .motivation-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .motivation-display {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .motivation-text {
+            color: white;
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .motivation-source {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9em;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .motivation-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .add-motivation-form {
+            display: none;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-motivation-form.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .motivation-input, .motivation-source-input {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .motivation-input::placeholder, .motivation-source-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .motivation-input:focus, .motivation-source-input:focus {
+            border-color: rgba(255,255,255,0.6);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+        }
+
+        .motivation-form-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
         
         .header {
             text-align: center;
@@ -351,6 +499,37 @@
                 padding: 15px;
                 border-radius: 10px;
             }
+
+            .motivation-slider {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .motivation-title {
+                font-size: 1.1em;
+            }
+
+            .motivation-text {
+                font-size: 1em;
+            }
+
+            .motivation-controls {
+                gap: 5px;
+            }
+
+            .motivation-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .add-motivation-form {
+                gap: 8px;
+            }
+
+            .motivation-input, .motivation-source-input {
+                padding: 10px;
+                font-size: 13px;
+            }
             
             .header {
                 margin-bottom: 20px;
@@ -514,10 +693,68 @@
 <body>
     <div id="app">
         <div class="container">
-            <div class="header">
+            <!-- Motivation Slider -->
+            <div class="motivation-slider">
+                <div class="motivation-content">
+                    <div class="motivation-header">
+                        <h3 class="motivation-title">
+                            <i class="fas fa-quote-left"></i>
+                            Bismillah | Raih produktifmu 
+                        </h3>
+                        <div class="motivation-controls">
+                            <button class="motivation-btn" @click="toggleAutoSlide">
+                                <i :class="autoSlide ? 'fas fa-pause' : 'fas fa-play'"></i>
+                            </button>
+                            <button class="motivation-btn" @click="toggleAddForm">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="motivation-display">
+                        <div class="motivation-text">{{ currentMotivation.text }}</div>
+                        <div class="motivation-source">— {{ currentMotivation.source }}</div>
+                    </div>
+
+                    <div class="motivation-indicators">
+                        <span 
+                            v-for="(motivation, index) in motivations" 
+                            :key="index"
+                            class="indicator"
+                            :class="{ active: currentMotivationIndex === index }"
+                            @click="setCurrentMotivation(index)"
+                        ></span>
+                    </div>
+
+                    <div class="add-motivation-form" :class="{ show: showAddForm }">
+                        <input 
+                            type="text" 
+                            v-model="newMotivationText" 
+                            placeholder="Masukkan motivasi baru..."
+                            class="motivation-input"
+                        >
+                        <input 
+                            type="text" 
+                            v-model="newMotivationSource" 
+                            placeholder="Sumber (contoh: QS. Al-Baqarah: 286)"
+                            class="motivation-source-input"
+                        >
+                        <div class="motivation-form-buttons">
+                            <button class="motivation-btn" @click="addMotivation">
+                                <i class="fas fa-save"></i> Simpan
+                            </button>
+                            <button class="motivation-btn" @click="cancelAddForm">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!--    <div class="header"> 
                 <h1>Daily Habit</h1>
                 <p>Bismillah, kesuksesan dimulai dari pilihan kebiasaan</p>
-            </div>
+            </div> //--> 
             
             <div class="current-date">
                 📅 {{ currentDateFormatted }}
@@ -649,11 +886,65 @@
                         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                     ],
-                    targetCompletionPercentage: 80 // Target persentase harian
+                    targetCompletionPercentage: 80, // Target persentase harian
+
+                    // Motivation Slider Data
+                    motivations: [
+                        {
+                            text: "Dan barangsiapa bertakwa kepada Allah, maka baginya jalan keluar, rezeki tak disangka, dimudahkan urusannya dll.",
+                            source: "QS. At-Talaq"
+                        },
+                        {
+                            text: "Sesungguhnya bersama kesulitan itu, datang kemudahan-kemudahan",
+                            source: "QS. Ash-Sharh: 5-6"
+                        },
+                        {
+                            text: "Sungguh Allah tak akan mengubah keadaan suatu kaum hingga mereka mengubah keadaan mereka sendiri.",
+                            source: "QS. Ar-Ra'd: 11"
+                        },
+                        {
+                            text: "Amal paling dicintai Allah, adalah yang dikerjakan secara istiqomah (kontinyu) walaupun sedikit.",
+                            source: "HR. Bukhari Muslim"
+                        },
+                        {
+                            text: "Manusia, akan mendapatkan apa yang dia usahakan.",
+                            source: "Surat An Najm: 39"
+                        },
+                        {
+                            text: "Man jadda wajada. Orang yang bersungguh-sungguh, akan berhasil.",
+                            source: "Pepatah Arab"
+                        },
+                        {
+                            text: "Laki-laki akan mendapat apa yang ia usahakan, dan perempuan akan mendapat apa yang ia usahakan.",
+                            source: "Surat An nisa: 32"
+                        },
+                        {
+                            text: "Waktu terbaik menanam pohon adalah 20 tahun lalu. Waktu terbaik kedua adalah sekarang.",
+                            source: "Pepatah Cina"
+                        },
+                        {
+                            text: "Membiasakan kebiasaan baik, sama dengan mempersiapkan kematian yang baik.",
+                            source: "Anonim"
+                        },
+                        {
+                            text: "Manusia hanyalah kumpulan hari. Jika satu hari hilang, maka hilanglah sebagian dari dirinya.",
+                            source: "Hasan Al Bashri"
+                        }
+                    ],
+                    currentMotivationIndex: 0,
+                    autoSlide: true,
+                    slideInterval: null,
+                    showAddForm: false,
+                    newMotivationText: '',
+                    newMotivationSource: ''
                 }
             },
             
             computed: {
+                currentMotivation() {
+                    return this.motivations[this.currentMotivationIndex] || { text: '', source: '' };
+                },
+
                 currentDateFormatted() {
                     const today = new Date();
                     // Use 'id-ID' locale and specify 'Asia/Jakarta' timezone
@@ -791,6 +1082,86 @@
             },
             
             methods: {
+                // Motivation Slider Methods
+                nextMotivation() {
+                    this.currentMotivationIndex = (this.currentMotivationIndex + 1) % this.motivations.length;
+                },
+
+                setCurrentMotivation(index) {
+                    this.currentMotivationIndex = index;
+                },
+
+                toggleAutoSlide() {
+                    this.autoSlide = !this.autoSlide;
+                    if (this.autoSlide) {
+                        this.startAutoSlide();
+                    } else {
+                        this.stopAutoSlide();
+                    }
+                },
+
+                startAutoSlide() {
+                    this.slideInterval = setInterval(() => {
+                        this.nextMotivation();
+                    }, 12000); // Change every 8 seconds
+                },
+
+                stopAutoSlide() {
+                    if (this.slideInterval) {
+                        clearInterval(this.slideInterval);
+                        this.slideInterval = null;
+                    }
+                },
+
+                toggleAddForm() {
+                    this.showAddForm = !this.showAddForm;
+                    if (!this.showAddForm) {
+                        this.newMotivationText = '';
+                        this.newMotivationSource = '';
+                    }
+                },
+
+                addMotivation() {
+                    if (this.newMotivationText.trim() && this.newMotivationSource.trim()) {
+                        this.motivations.push({
+                            text: this.newMotivationText.trim(),
+                            source: this.newMotivationSource.trim()
+                        });
+                        this.newMotivationText = '';
+                        this.newMotivationSource = '';
+                        this.showAddForm = false;
+                        this.saveMotivations();
+                    }
+                },
+
+                cancelAddForm() {
+                    this.showAddForm = false;
+                    this.newMotivationText = '';
+                    this.newMotivationSource = '';
+                },
+
+                saveMotivations() {
+                    try {
+                        localStorage.setItem('habitTrackerMotivations', JSON.stringify(this.motivations));
+                    } catch (e) {
+                        console.error("Error saving motivations to localStorage:", e);
+                    }
+                },
+
+                loadMotivations() {
+                    try {
+                        const savedMotivations = JSON.parse(localStorage.getItem('habitTrackerMotivations') || '[]');
+                        if (savedMotivations.length > 0) {
+                            // Merge saved motivations with default ones (avoid duplicates)
+                            const defaultTexts = this.motivations.map(m => m.text);
+                            const newMotivations = savedMotivations.filter(m => !defaultTexts.includes(m.text));
+                            this.motivations = [...this.motivations, ...newMotivations];
+                        }
+                    } catch (e) {
+                        console.error("Error loading motivations from localStorage:", e);
+                    }
+                },
+
                 // Helper function to get today's date in YYYY-MM-DD format for Jakarta timezone
                 getTodayJakartaDateString() {
                     const now = new Date();
@@ -914,6 +1285,16 @@
             
             mounted() {
                 this.loadData();
+                this.loadMotivations();
+                
+                // Start auto slide
+                if (this.autoSlide) {
+                    this.startAutoSlide();
+                }
+            },
+
+            beforeUnmount() {
+                this.stopAutoSlide();
             }
         }).mount('#app');
     </script>
