@@ -6,7 +6,6 @@
     <title>Habit Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta8PUbWsyFX4Nk/LAgeroXyL/glQeu7t/hQfM+oJ+6sPzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         /* Base styles for all screen sizes */
         * {
@@ -277,7 +276,7 @@
             margin-bottom: 30px;
         }
 
-        /* Drag and Drop Header */
+        /* Habits List Header */
         .habits-list-header {
             display: flex;
             align-items: center;
@@ -292,7 +291,7 @@
             color: #4a4a4a;
         }
 
-        .drag-instruction {
+        .order-instruction {
             font-size: 0.9em;
             color: #8a8a8a;
             display: flex;
@@ -311,25 +310,7 @@
             justify-content: space-between;
             transition: all 0.3s;
             box-shadow: 0 2px 10px rgba(0,0,0,0.04); /* Subtle shadow */
-            cursor: move;
             position: relative;
-        }
-
-        .habit-item::before {
-            content: '⋮⋮';
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ccc;
-            font-size: 16px;
-            letter-spacing: -2px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .habit-item:hover::before {
-            opacity: 1;
         }
         
         .habit-item:hover {
@@ -342,30 +323,12 @@
             color: #388e3c; /* Darker green text */
             border-color: #c3e6cb;
         }
-
-        /* Sortable.js styles */
-        .sortable-ghost {
-            opacity: 0.5;
-            background: #f0f2f5 !important;
-            border: 2px dashed #8a8a8a !important;
-        }
-
-        .sortable-chosen {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-            transform: rotate(2deg);
-        }
-
-        .sortable-drag {
-            opacity: 1 !important;
-        }
         
         .habit-left {
             display: flex;
             align-items: center;
             gap: 15px;
-            /* Flex-grow to take available space */
             flex-grow: 1; 
-            margin-left: 25px; /* Add margin to account for drag handle */
         }
         
         .habit-checkbox {
@@ -398,7 +361,6 @@
             font-size: 18px;
             font-weight: 600;
             color: #4a4a4a;
-            /* Allow text to wrap if it's too long */
             word-break: break-word; 
         }
 
@@ -415,8 +377,48 @@
         
         .habit-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0; /* Prevent actions from shrinking */
+            align-items: center;
+        }
+
+        /* Order Control Buttons */
+        .order-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-right: 8px;
+        }
+
+        .order-btn {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            color: #6c757d;
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 20px;
+        }
+
+        .order-btn:hover:not(:disabled) {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+        }
+
+        .order-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .order-btn i {
+            font-size: 10px;
         }
         
         .btn-small {
@@ -708,7 +710,7 @@
                 gap: 5px;
             }
 
-            .drag-instruction {
+            .order-instruction {
                 font-size: 0.8em;
             }
 
@@ -720,17 +722,11 @@
                 justify-content: space-between;
                 align-items: center;
             }
-
-            .habit-item::before {
-                left: 5px;
-                font-size: 14px;
-            }
             
             .habit-left {
                 flex-grow: 1; 
                 gap: 8px; 
-                max-width: calc(100% - 75px);
-                margin-left: 20px;
+                max-width: calc(100% - 100px);
             }
 
             .habit-checkbox {
@@ -760,7 +756,23 @@
             .habit-actions {
                 gap: 5px; 
                 flex-shrink: 0;
-                min-width: 25px; 
+                min-width: 80px; 
+            }
+
+            .order-controls {
+                gap: 1px;
+                margin-right: 5px;
+            }
+
+            .order-btn {
+                padding: 3px 5px;
+                min-width: 20px;
+                height: 18px;
+                font-size: 10px;
+            }
+
+            .order-btn i {
+                font-size: 8px;
             }
             
             .btn-small {
@@ -904,16 +916,15 @@
             <div class="habits-list" v-if="sortedHabits.length > 0">
                 <div class="habits-list-header">
                     <h3 class="habits-list-title">Daftar Kebiasaan</h3>
-                    <div class="drag-instruction">
-                        <i class="fas fa-arrows-alt"></i>
-                        Seret untuk mengatur urutan
+                    <div class="order-instruction">
+                        <i class="fas fa-arrows-alt-v"></i>
+                        Gunakan tombol ↑↓ untuk mengatur urutan
                     </div>
                 </div>
-                <div id="sortable-habits">
+                <div>
                     <div 
-                        v-for="habit in sortedHabits" 
+                        v-for="(habit, index) in sortedHabits" 
                         :key="habit.id"
-                        :data-id="habit.id"
                         class="habit-item"
                         :class="{ completed: isCompletedToday(habit.id) }"
                     >
@@ -931,9 +942,28 @@
                             </div>
                         </div>
                         <div class="habit-actions">
+                            <div class="order-controls">
+                                <button 
+                                    class="order-btn"
+                                    @click="moveHabitUp(habit.id)"
+                                    :disabled="index === 0"
+                                    title="Pindah ke atas"
+                                >
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                                <button 
+                                    class="order-btn"
+                                    @click="moveHabitDown(habit.id)"
+                                    :disabled="index === sortedHabits.length - 1"
+                                    title="Pindah ke bawah"
+                                >
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
                             <button 
                                 class="btn btn-small btn-danger" 
                                 @click="deleteHabit(habit.id)"
+                                title="Hapus kebiasaan"
                             >
                                 <i class="fas fa-trash-alt"></i> 
                             </button>
@@ -1264,28 +1294,27 @@
             },
             
             methods: {
-                // Drag and Drop Methods
-                initializeDragAndDrop() {
-                    this.$nextTick(() => {
-                        const el = document.getElementById('sortable-habits');
-                        if (el && !el._sortable) {
-                            el._sortable = Sortable.create(el, {
-                                animation: 200,
-                                ghostClass: 'sortable-ghost',
-                                chosenClass: 'sortable-chosen',
-                                dragClass: 'sortable-drag',
-                                onEnd: (evt) => {
-                                    this.updateHabitOrder(evt);
-                                }
-                            });
-                        }
-                    });
+                // New Order Management Methods (replacing drag and drop)
+                moveHabitUp(habitId) {
+                    const currentIndex = this.habitOrder.indexOf(habitId);
+                    if (currentIndex > 0) {
+                        // Swap with previous item
+                        const newOrder = [...this.habitOrder];
+                        [newOrder[currentIndex], newOrder[currentIndex - 1]] = [newOrder[currentIndex - 1], newOrder[currentIndex]];
+                        this.habitOrder = newOrder;
+                        this.saveData();
+                    }
                 },
 
-                updateHabitOrder(evt) {
-                    const newOrder = Array.from(evt.to.children).map(el => parseInt(el.dataset.id));
-                    this.habitOrder = newOrder;
-                    this.saveData();
+                moveHabitDown(habitId) {
+                    const currentIndex = this.habitOrder.indexOf(habitId);
+                    if (currentIndex < this.habitOrder.length - 1 && currentIndex !== -1) {
+                        // Swap with next item
+                        const newOrder = [...this.habitOrder];
+                        [newOrder[currentIndex], newOrder[currentIndex + 1]] = [newOrder[currentIndex + 1], newOrder[currentIndex]];
+                        this.habitOrder = newOrder;
+                        this.saveData();
+                    }
                 },
 
                 // Performance evaluation methods
@@ -1422,9 +1451,6 @@
                         this.habitOrder.push(habit.id);
                         
                         this.saveData();
-                        
-                        // Re-initialize drag and drop for the new element
-                        this.initializeDragAndDrop();
                     }
                 },
                 
@@ -1437,9 +1463,6 @@
                         this.habitOrder = this.habitOrder.filter(habitId => habitId !== id);
                         
                         this.saveData();
-                        
-                        // Re-initialize drag and drop
-                        this.initializeDragAndDrop();
                     }
                 },
                 
@@ -1540,14 +1563,6 @@
                 if (this.autoSlide) {
                     this.startAutoSlide();
                 }
-                
-                // Initialize drag and drop
-                this.initializeDragAndDrop();
-            },
-
-            updated() {
-                // Re-initialize drag and drop when habits list changes
-                this.initializeDragAndDrop();
             },
 
             beforeUnmount() {
