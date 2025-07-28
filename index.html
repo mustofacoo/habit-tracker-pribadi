@@ -6,6 +6,7 @@
     <title>Habit Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta8PUbWsyFX4Nk/LAgeroXyL/glQeu7t/hQfM+oJ+6sPzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         /* Base styles for all screen sizes */
         * {
@@ -275,6 +276,29 @@
         .habits-list {
             margin-bottom: 30px;
         }
+
+        /* Drag and Drop Header */
+        .habits-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .habits-list-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+
+        .drag-instruction {
+            font-size: 0.9em;
+            color: #8a8a8a;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         
         .habit-item {
             background: #ffffff;
@@ -287,6 +311,25 @@
             justify-content: space-between;
             transition: all 0.3s;
             box-shadow: 0 2px 10px rgba(0,0,0,0.04); /* Subtle shadow */
+            cursor: move;
+            position: relative;
+        }
+
+        .habit-item::before {
+            content: '⋮⋮';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ccc;
+            font-size: 16px;
+            letter-spacing: -2px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .habit-item:hover::before {
+            opacity: 1;
         }
         
         .habit-item:hover {
@@ -299,6 +342,22 @@
             color: #388e3c; /* Darker green text */
             border-color: #c3e6cb;
         }
+
+        /* Sortable.js styles */
+        .sortable-ghost {
+            opacity: 0.5;
+            background: #f0f2f5 !important;
+            border: 2px dashed #8a8a8a !important;
+        }
+
+        .sortable-chosen {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            transform: rotate(2deg);
+        }
+
+        .sortable-drag {
+            opacity: 1 !important;
+        }
         
         .habit-left {
             display: flex;
@@ -306,6 +365,7 @@
             gap: 15px;
             /* Flex-grow to take available space */
             flex-grow: 1; 
+            margin-left: 25px; /* Add margin to account for drag handle */
         }
         
         .habit-checkbox {
@@ -408,6 +468,14 @@
             background-position: right 10px center;
             background-size: 12px;
         }
+
+        .recap-sort-info {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #8a8a8a;
+            font-style: italic;
+        }
         
         .recap-stats {
             display: grid;
@@ -444,6 +512,44 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 1px 5px rgba(0,0,0,0.03);
+            position: relative;
+        }
+
+        .habit-monthly-detail.low-performance {
+            border-left: 4px solid #dc3545;
+        }
+
+        .habit-monthly-detail.medium-performance {
+            border-left: 4px solid #ffc107;
+        }
+
+        .habit-monthly-detail.high-performance {
+            border-left: 4px solid #28a745;
+        }
+
+        .performance-indicator {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .performance-indicator.low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .performance-indicator.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .performance-indicator.high {
+            background: #d4edda;
+            color: #155724;
         }
         
         .progress-bar {
@@ -458,6 +564,18 @@
             height: 100%;
             background: #a0a0a0; /* Gray for progress fill */
             transition: width 0.3s;
+        }
+
+        .progress-fill.low {
+            background: #dc3545;
+        }
+
+        .progress-fill.medium {
+            background: #ffc107;
+        }
+
+        .progress-fill.high {
+            background: #28a745;
         }
         
         .empty-state {
@@ -584,6 +702,16 @@
                 margin-bottom: 20px; 
             }
 
+            .habits-list-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .drag-instruction {
+                font-size: 0.8em;
+            }
+
             .habit-item {
                 padding: 12px;
                 margin-bottom: 8px;
@@ -592,11 +720,17 @@
                 justify-content: space-between;
                 align-items: center;
             }
+
+            .habit-item::before {
+                left: 5px;
+                font-size: 14px;
+            }
             
             .habit-left {
                 flex-grow: 1; 
                 gap: 8px; 
-                max-width: calc(100% - 75px); 
+                max-width: calc(100% - 75px);
+                margin-left: 20px;
             }
 
             .habit-checkbox {
@@ -682,6 +816,12 @@
                 font-size: 0.9em;
             }
 
+            .performance-indicator {
+                position: static;
+                margin-top: 5px;
+                display: inline-block;
+            }
+
             .progress-bar {
                 width: 60px; 
                 min-width: 60px; 
@@ -751,11 +891,6 @@
                 </div>
             </div>
 
-        <!--    <div class="header"> 
-                <h1>Daily Habit</h1>
-                <p>Bismillah, kesuksesan dimulai dari pilihan kebiasaan</p>
-            </div> //--> 
-            
             <div class="current-date">
                 📅 {{ currentDateFormatted }}
             </div>
@@ -766,33 +901,43 @@
                 <p class="daily-message">{{ dailyCompletionMessage }}</p>
             </div>
             
-            <div class="habits-list" v-if="habits.length > 0">
-                <div 
-                    v-for="habit in habits" 
-                    :key="habit.id"
-                    class="habit-item"
-                    :class="{ completed: isCompletedToday(habit.id) }"
-                >
-                    <div class="habit-left">
-                        <div 
-                            class="habit-checkbox"
-                            :class="{ checked: isCompletedToday(habit.id) }"
-                            @click="toggleHabit(habit.id)"
-                        ></div>
-                        <div>
-                            <div class="habit-name">{{ habit.name }}</div>
-                            <div class="habit-streak">
-                                🔥 Streak: {{ getStreak(habit.id) }} hari
+            <div class="habits-list" v-if="sortedHabits.length > 0">
+                <div class="habits-list-header">
+                    <h3 class="habits-list-title">Daftar Kebiasaan</h3>
+                    <div class="drag-instruction">
+                        <i class="fas fa-arrows-alt"></i>
+                        Seret untuk mengatur urutan
+                    </div>
+                </div>
+                <div id="sortable-habits">
+                    <div 
+                        v-for="habit in sortedHabits" 
+                        :key="habit.id"
+                        :data-id="habit.id"
+                        class="habit-item"
+                        :class="{ completed: isCompletedToday(habit.id) }"
+                    >
+                        <div class="habit-left">
+                            <div 
+                                class="habit-checkbox"
+                                :class="{ checked: isCompletedToday(habit.id) }"
+                                @click="toggleHabit(habit.id)"
+                            ></div>
+                            <div>
+                                <div class="habit-name">{{ habit.name }}</div>
+                                <div class="habit-streak">
+                                    🔥 Streak: {{ getStreak(habit.id) }} hari
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="habit-actions">
-                        <button 
-                            class="btn btn-small btn-danger" 
-                            @click="deleteHabit(habit.id)"
-                        >
-                            <i class="fas fa-trash-alt"></i> 
-                        </button>
+                        <div class="habit-actions">
+                            <button 
+                                class="btn btn-small btn-danger" 
+                                @click="deleteHabit(habit.id)"
+                            >
+                                <i class="fas fa-trash-alt"></i> 
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -813,7 +958,7 @@
             </div>
             
             <div class="monthly-recap">
-                <h2>📊 Rekap Bulanan</h2>
+                <h2> Rekap Bulanan</h2>
                 
                 <div class="month-selector">
                     <select v-model="selectedMonthYear">
@@ -821,6 +966,10 @@
                             {{ monthYear.label }}
                         </option>
                     </select>
+                </div>
+
+                <div class="recap-sort-info">
+                     Diurutkan dari capaian terendah untuk evaluasi yang lebih fokus
                 </div>
                 
                 <div class="recap-stats">
@@ -838,16 +987,19 @@
                     </div>
                 </div>
                 
-                <div v-if="monthlyHabits.length > 0">
-                    <div v-for="habit in monthlyHabits" :key="habit.id" class="habit-monthly-detail">
+                <div v-if="sortedMonthlyHabits.length > 0">
+                    <div v-for="habit in sortedMonthlyHabits" :key="habit.id" class="habit-monthly-detail" :class="getPerformanceClass(habit.percentage)">
                         <div>
                             <strong>{{ habit.name }}</strong>
                             <div style="font-size: 14px; color: #6a6a6a;">
                                 {{ habit.completions }}/{{ daysInSelectedMonth }} hari ({{ habit.percentage }}%)
                             </div>
+                            <div class="performance-indicator" :class="getPerformanceLevel(habit.percentage)">
+                                {{ getPerformanceText(habit.percentage) }}
+                            </div>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" :style="{ width: habit.percentage + '%' }"></div>
+                            <div class="progress-fill" :class="getPerformanceLevel(habit.percentage)" :style="{ width: habit.percentage + '%' }"></div>
                         </div>
                     </div>
                 </div>
@@ -881,6 +1033,7 @@
                     completions: {}, // { habitId: { 'YYYY-MM-DD': true } }
                     newHabit: '',
                     selectedMonthYear: `${currentYear}-${String(currentMonth).padStart(2, '0')}`, // Format 'YYYY-MM'
+                    habitOrder: [], // Array to store custom habit order
                     
                     allMonths: [
                         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -945,6 +1098,30 @@
                     return this.motivations[this.currentMotivationIndex] || { text: '', source: '' };
                 },
 
+                // Sort habits based on custom order
+                sortedHabits() {
+                    if (this.habitOrder.length === 0) {
+                        return this.habits;
+                    }
+                    
+                    // Sort habits based on the order array
+                    const orderedHabits = [];
+                    const unorderedHabits = [...this.habits];
+                    
+                    // First, add habits in the specified order
+                    this.habitOrder.forEach(habitId => {
+                        const habitIndex = unorderedHabits.findIndex(h => h.id === habitId);
+                        if (habitIndex !== -1) {
+                            orderedHabits.push(unorderedHabits.splice(habitIndex, 1)[0]);
+                        }
+                    });
+                    
+                    // Then add any remaining habits that weren't in the order
+                    orderedHabits.push(...unorderedHabits);
+                    
+                    return orderedHabits;
+                },
+
                 currentDateFormatted() {
                     const today = new Date();
                     // Use 'id-ID' locale and specify 'Asia/Jakarta' timezone
@@ -978,12 +1155,12 @@
                 },
 
                 dailyCompletionMessage() {
-                    if (this.habits.length === 0) {
+                        if (this.habits.length === 0) {
                         return "Tambahkan kebiasaan Anda untuk mulai melacak progress harian!";
                     } else if (this.dailyCompletionPercentage >= this.targetCompletionPercentage) {
                         return "Alhamdulillah! Anda sudah mencapai target hari ini. Semoga istiqomah!";
                     } else {
-                        return `Jangan bersantai sebelum mencapai ${this.targetCompletionPercentage}% ! Semoga Allah mudahkan`;
+                        return `Yuk semangat produktif!, Anda belum ${this.targetCompletionPercentage}% ! Semoga Allah mudahkan`;
                     }
                 },
                 
@@ -1078,10 +1255,58 @@
                             percentage: Math.round((completions / this.daysInSelectedMonth) * 100)
                         };
                     });
+                },
+
+                // Sort monthly habits by performance (lowest first)
+                sortedMonthlyHabits() {
+                    return this.monthlyHabits.slice().sort((a, b) => a.percentage - b.percentage);
                 }
             },
             
             methods: {
+                // Drag and Drop Methods
+                initializeDragAndDrop() {
+                    this.$nextTick(() => {
+                        const el = document.getElementById('sortable-habits');
+                        if (el && !el._sortable) {
+                            el._sortable = Sortable.create(el, {
+                                animation: 200,
+                                ghostClass: 'sortable-ghost',
+                                chosenClass: 'sortable-chosen',
+                                dragClass: 'sortable-drag',
+                                onEnd: (evt) => {
+                                    this.updateHabitOrder(evt);
+                                }
+                            });
+                        }
+                    });
+                },
+
+                updateHabitOrder(evt) {
+                    const newOrder = Array.from(evt.to.children).map(el => parseInt(el.dataset.id));
+                    this.habitOrder = newOrder;
+                    this.saveData();
+                },
+
+                // Performance evaluation methods
+                getPerformanceLevel(percentage) {
+                    if (percentage < 50) return 'low';
+                    if (percentage < 80) return 'medium';
+                    return 'high';
+                },
+
+                getPerformanceClass(percentage) {
+                    if (percentage < 50) return 'low-performance';
+                    if (percentage < 80) return 'medium-performance';
+                    return 'high-performance';
+                },
+
+                getPerformanceText(percentage) {
+                    if (percentage < 50) return 'Yuk semangat!';
+                    if (percentage < 80) return 'Semoga istiqomah';
+                    return 'Sangat Baik';
+                },
+
                 // Motivation Slider Methods
                 nextMotivation() {
                     this.currentMotivationIndex = (this.currentMotivationIndex + 1) % this.motivations.length;
@@ -1103,7 +1328,7 @@
                 startAutoSlide() {
                     this.slideInterval = setInterval(() => {
                         this.nextMotivation();
-                    }, 12000); // Change every 8 seconds
+                    }, 12000); // Change every 12 seconds
                 },
 
                 stopAutoSlide() {
@@ -1193,15 +1418,28 @@
                             this.completions[habit.id] = {};
                         }
                         
+                        // Add to the end of the order array
+                        this.habitOrder.push(habit.id);
+                        
                         this.saveData();
+                        
+                        // Re-initialize drag and drop for the new element
+                        this.initializeDragAndDrop();
                     }
                 },
                 
                 deleteHabit(id) {
                     if (confirm('Apakah Anda yakin ingin menghapus kebiasaan ini?')) {
                         this.habits = this.habits.filter(h => h.id !== id);
-                        delete this.completions[id]; 
+                        delete this.completions[id];
+                        
+                        // Remove from order array
+                        this.habitOrder = this.habitOrder.filter(habitId => habitId !== id);
+                        
                         this.saveData();
+                        
+                        // Re-initialize drag and drop
+                        this.initializeDragAndDrop();
                     }
                 },
                 
@@ -1261,7 +1499,8 @@
                     try {
                         localStorage.setItem('habitTrackerData', JSON.stringify({
                             habits: this.habits,
-                            completions: this.completions
+                            completions: this.completions,
+                            habitOrder: this.habitOrder
                         }));
                         console.log("Data berhasil disimpan ke localStorage.");
                     } catch (e) {
@@ -1274,11 +1513,21 @@
                         const data = JSON.parse(localStorage.getItem('habitTrackerData') || '{}');
                         this.habits = data.habits || [];
                         this.completions = data.completions || {};
+                        this.habitOrder = data.habitOrder || [];
+                        
+                        // Ensure all existing habits are in the order array
+                        this.habits.forEach(habit => {
+                            if (!this.habitOrder.includes(habit.id)) {
+                                this.habitOrder.push(habit.id);
+                            }
+                        });
+                        
                         console.log("Data berhasil dimuat dari localStorage.");
                     } catch (e) {
                         console.error("Error loading data from localStorage:", e);
                         this.habits = [];
                         this.completions = {};
+                        this.habitOrder = [];
                     }
                 }
             },
@@ -1291,6 +1540,14 @@
                 if (this.autoSlide) {
                     this.startAutoSlide();
                 }
+                
+                // Initialize drag and drop
+                this.initializeDragAndDrop();
+            },
+
+            updated() {
+                // Re-initialize drag and drop when habits list changes
+                this.initializeDragAndDrop();
             },
 
             beforeUnmount() {
